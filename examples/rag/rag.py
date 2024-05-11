@@ -3,7 +3,6 @@ from langchain.globals import set_debug
 set_debug(False)  # debug時はTrue
 
 from langchain_aws import AmazonKnowledgeBasesRetriever, ChatBedrock
-from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -51,12 +50,6 @@ retriever = AmazonKnowledgeBasesRetriever(
         }
     },
 )
-
-messages = [
-    HumanMessage(
-        content="Translate this sentence from English to French. I love programming."
-    )
-]
 
 
 # chainの定義
