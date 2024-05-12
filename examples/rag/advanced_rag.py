@@ -40,9 +40,12 @@ def main():
     region = "us-east-1"
     conf_llm_path = "./config/config_llm.yaml"
     prompt_template_path = "./config/prompt_template.yaml"
+    question_path = "./config/question.yaml"
     conf_llm = utils.load_yaml(conf_llm_path)
     conf_prompt_template = utils.load_yaml(prompt_template_path)
+    question = utils.load_yaml(question_path)
 
+    # step1. Expand query
     prompt = create_prompt(
         conf_prompt_template["query_expansion"]["template"],
         conf_prompt_template["query_expansion"]["args"],
