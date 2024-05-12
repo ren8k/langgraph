@@ -51,7 +51,6 @@ retriever = AmazonKnowledgeBasesRetriever(
     },
 )
 
-
 # chainの定義
 chain = (
     {
