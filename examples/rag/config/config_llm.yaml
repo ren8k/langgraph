@@ -1,6 +1,5 @@
-model_id: anthropic.claude-3-haiku-20240307-v1:0
-
 query_expansion:
+  model_id: anthropic.claude-3-haiku-20240307-v1:0
   system_message: Respond valid json format.
   assistant_message: "{"
   args:

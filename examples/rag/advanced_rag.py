@@ -1,3 +1,6 @@
+import json
+from typing import Any
+
 from langchain.globals import set_debug
 
 set_debug(False)  # debug時はTrue
@@ -18,6 +21,21 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 question = "Amazonの生成AIの分野での注力範囲は？"
 
 
+def create_prompt(template: str, kwargs: dict, question: str):
+    template = PromptTemplate.from_template(template)
+    return template.format(**kwargs, question=question)
+
+
+def create_chat_template(include_ai_message=False):
+    messages = [
+        SystemMessage(content="{system_message}"),
+        HumanMessagePromptTemplate.from_template("{prompt}"),
+    ]
+    if include_ai_message:
+        messages.append(AIMessagePromptTemplate.from_template("{assistant_message}"))
+    return ChatPromptTemplate.from_messages(messages)
+
+
 def main():
     region = "us-east-1"
     conf_llm_path = "./config/config_llm.yaml"
@@ -25,27 +43,15 @@ def main():
     conf_llm = utils.load_yaml(conf_llm_path)
     conf_prompt_template = utils.load_yaml(prompt_template_path)
 
-    prompt_template = PromptTemplate.from_template(
-        conf_prompt_template["query_expansion"]["template"]
+    prompt = create_prompt(
+        conf_prompt_template["query_expansion"]["template"],
+        conf_prompt_template["query_expansion"]["args"],
+        question,
     )
-
-    kwargs = {
-        "n_queries": conf_prompt_template["query_expansion"]["n_queries"],
-        "output_format": conf_prompt_template["query_expansion"]["output_format"],
-        "question": question,
-    }
-    prompt = prompt_template.format(**kwargs)
-
-    chat_template = ChatPromptTemplate.from_messages(
-        [
-            SystemMessage(content="{system_message}"),
-            HumanMessagePromptTemplate.from_template("{prompt}"),
-            AIMessagePromptTemplate.from_template("{assistant_message}"),
-        ]
-    )
+    chat_template = create_chat_template(include_ai_message=True)
 
     LLM = ChatBedrock(
-        model_id=conf_llm["model_id"],
+        model_id=conf_llm["query_expansion"]["model_id"],
         region_name=region,
         model_kwargs=conf_llm["query_expansion"]["args"],
     )
@@ -59,9 +65,10 @@ def main():
             "assistant_message": conf_llm["query_expansion"]["assistant_message"],
         }
     )
-
-    # chainの実行
-    print("{" + answer)
+    queries_expanded: str = "{" + answer
+    queries_expanded_dict = json.loads(queries_expanded)
+    queries_expanded_dict["query_0"] = question
+    print(queries_expanded_dict)
 
 
 if __name__ == "__main__":
